@@ -5,7 +5,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 
 @Controller('events')
 export class EventsController {
-  constructor(private eventsService: EventsService) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Post()
   create(@Body() createEventDto: CreateEventDto) {

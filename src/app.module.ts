@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { Type } from 'class-transformer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from './events/events.module';
+import { ExpensesModule } from './expenses/expenses.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { EventsModule } from './events/events.module';
       synchronize: true,
     }),
     EventsModule,
+    ExpensesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
