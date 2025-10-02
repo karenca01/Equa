@@ -1,4 +1,7 @@
-import { IsNumber, IsString, MaxLength } from "class-validator";
+import { IsNumber, IsString, MaxLength, IsObject, IsOptional } from "class-validator";
+import { User } from "../../users/entities/user.entity";
+import { Event } from "../../events/entities/event.entity";
+import { Expensesplit } from "../../expensesplits/entities/expensesplit.entity";
 
 export class CreateExpenseDto {
     @IsString()
@@ -10,4 +13,16 @@ export class CreateExpenseDto {
 
     @IsNumber()
     expenseAmount: number;
+
+    @IsObject()
+    @IsOptional()
+    paidBy: User;
+
+    @IsObject()
+    @IsOptional()
+    event: Event;
+
+    @IsObject()
+    @IsOptional()
+    splits: Expensesplit[];
 }

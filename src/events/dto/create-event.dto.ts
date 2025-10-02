@@ -1,4 +1,6 @@
-import { IsString, MaxLength } from "class-validator";
+import { IsObject, IsOptional, IsString, MaxLength, IsIn } from "class-validator";
+import { User } from "../../users/entities/user.entity";
+import { Event } from "../../events/entities/event.entity";
 
 export class CreateEventDto {
     @IsString()
@@ -8,6 +10,11 @@ export class CreateEventDto {
     @MaxLength(200)
     eventDescription: string;
 
-    @IsString()
+    @IsIn(['Private', 'Public'])
+    @IsOptional()
     eventType: string;
+
+    @IsObject()
+    @IsOptional()
+    createdBy: User;
 }

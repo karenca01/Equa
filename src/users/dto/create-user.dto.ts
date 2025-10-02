@@ -1,4 +1,5 @@
-import { IsEmail, IsString, Min, MinLength } from "class-validator";
+import { IsEmail, IsObject, IsString, Min, MinLength, IsOptional } from "class-validator";
+import { Event } from "../../events/entities/event.entity";
 
 export class CreateUserDto {
     @IsString()
@@ -14,4 +15,12 @@ export class CreateUserDto {
     @IsString()
     @MinLength(8)
     userPassword: string;
+
+    @IsObject()
+    @IsOptional()
+    createdEvents: Event[];
+
+    @IsObject()
+    @IsOptional()
+    joinedEvents: Event[];
 }
