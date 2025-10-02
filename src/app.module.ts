@@ -7,6 +7,7 @@ import { Type } from 'class-transformer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventsModule } from './events/events.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { ExpensesplitsModule } from './expensesplits/expensesplits.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ExpensesModule } from './expenses/expenses.module';
     }),
     EventsModule,
     ExpensesModule,
+    ExpensesplitsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
