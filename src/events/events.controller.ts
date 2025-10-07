@@ -22,6 +22,19 @@ export class EventsController {
     return this.eventsService.findOne(id);
   }
 
+  @Post('add-participants/:id')
+  async addParticipants(
+    @Param('id') eventId: string,
+    @Body('participants') participantIds: string[],
+  ){
+    return this.eventsService.addParticipants(eventId, participantIds);
+  }
+
+  @Get(':id/summary')
+  async getEventSummary(@Param('id') id: string) {
+    return this.eventsService.getEventSummary(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(id, updateEventDto);
