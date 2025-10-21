@@ -11,7 +11,7 @@ export class Expense {
   @Column()
   expenseDescription: string;
 
-  @Column('decimal')
+  @Column('decimal',{precision:10, scale:2})
   expenseAmount: number;
 
   @ManyToOne(() => User)
@@ -20,7 +20,9 @@ export class Expense {
   })
   paidBy: User; // quién pagó
 
-  @ManyToOne(() => Event, event => event.expenses)
+  @ManyToOne(() => Event, event => event.expenses,{
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({
     name: 'event',
   })

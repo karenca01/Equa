@@ -7,7 +7,9 @@ export class Expensesplit {
   @PrimaryGeneratedColumn("uuid")
   expenseSplitId: string;
 
-  @ManyToOne(() => Expense, expense => expense.splits)
+  @ManyToOne(() => Expense, expense => expense.splits,{
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({
     name: 'expense',
   })
@@ -19,7 +21,7 @@ export class Expensesplit {
   })
   user: User; // quién debe pagar
 
-  @Column('decimal', { nullable: true })
+  @Column('decimal', { nullable: true, precision: 10, scale: 2 })
   expenseSplitAmount: number; // si se divide por monto fijo
 
   @Column('decimal', { nullable: true })

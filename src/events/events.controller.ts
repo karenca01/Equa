@@ -30,6 +30,14 @@ export class EventsController {
     return this.eventsService.addParticipants(eventId, participantIds);
   }
 
+  @Delete(':eventId/participants') // Ruta más limpia y semántica
+  async deleteParticipants(
+    @Param('eventId') eventId: string, // Nombre del parámetro más claro
+    @Body() body: { participants: string[] }, // Usamos el DTO o el cuerpo completo
+  ) {
+    return this.eventsService.deleteParticipants(eventId, body.participants);
+  }
+
   @Get(':id/summary')
   async getEventSummary(@Param('id') id: string) {
     return this.eventsService.getEventSummary(id);

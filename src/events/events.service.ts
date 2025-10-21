@@ -8,7 +8,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Expense } from 'src/expenses/entities/expense.entity';
 import { Expensesplit } from 'src/expensesplits/entities/expensesplit.entity';
 import { User } from 'src/users/entities/user.entity';
-import { p } from 'framer-motion/client';
+import { p, th } from 'framer-motion/client';
 
 @Injectable()
 export class EventsService {
@@ -85,6 +85,25 @@ export class EventsService {
       message: 'Participantes exitosamente agregados',
       participants: event.participants
     }
+  }
+
+  async deleteParticipants(eventId: string, participantIds: string[]) {
+    const event = await this.eventRepository.findOne({
+      where: { eventId: eventId },
+      relations: ['participants'],
+    });
+    if (!event) throw new NotFoundException(`No se encuentra el evento: ${eventId}`);
+
+    event.participants = event.participants.filter(
+      (participant) => !participantIds.includes(participant.userId),
+    );
+
+    await this.eventRepository.save(event);
+
+    return {
+      message: 'Participantes eliminados exitosamente',
+      participants: event.participants,
+    };
   }
 
   async getEventSummary(eventId: string) {
