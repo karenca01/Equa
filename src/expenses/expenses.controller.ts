@@ -1,20 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Get, Param, Patch, Delete } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+// import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Ajusta la ruta según tu estructura
 
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
+  // @UseGuards(JwtAuthGuard)
+  @Auth()
   @Post()
-  create(@Body() createExpenseDto: CreateExpenseDto) {
-    return this.expensesService.create(createExpenseDto);
+  create(@Body() createExpenseDto: CreateExpenseDto, @Req() req) {
+    const userId = req.user.sub; // el userId del token
+    return this.expensesService.create(createExpenseDto, userId);
   }
 
   @Get()
   findAll() {
     return this.expensesService.findAll();
+  }
+
+  @Get('/event/:eventId')
+  async findByEvent(@Param('eventId') eventId: string) {
+    return this.expensesService.findByEvent(eventId);
   }
 
   @Get(':id')

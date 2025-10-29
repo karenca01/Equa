@@ -4,10 +4,12 @@ import { ExpensesController } from './expenses.controller';
 import { Type } from 'class-transformer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Expense } from './entities/expense.entity';
+import { User } from '../users/entities/user.entity';
+import { Event } from '../events/entities/event.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Expense])
+    TypeOrmModule.forFeature([Expense, User, Event]),
   ],
   controllers: [ExpensesController],
   providers: [ExpensesService],

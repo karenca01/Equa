@@ -1,29 +1,64 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Expense } from './entities/expense.entity';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Expense } from './entities/expense.entity';
-import { Repository } from 'typeorm';
+import { Event } from '../events/entities/event.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ExpensesService {
   constructor(
     @InjectRepository(Expense)
-    private expenseRepository: Repository<Expense>,
+    private readonly expenseRepository: Repository<Expense>,
+
+    @InjectRepository(Event)
+    private readonly eventRepository: Repository<Event>,
+
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
-  create(createExpenseDto: CreateExpenseDto) {
-    return this.expenseRepository.save(createExpenseDto);
+  async create(createExpenseDto: CreateExpenseDto, userId: string) {
+    const { expenseDescription, expenseAmount, eventId } = createExpenseDto;
+
+    const event = await this.eventRepository.findOne({ where: { eventId } });
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    const expense = this.expenseRepository.create({
+      expenseDescription,
+      expenseAmount,
+      event,
+      paidBy: user,
+    });
+
+    return this.expenseRepository.save(expense);
   }
 
   findAll() {
     return this.expenseRepository.find();
   }
 
-  findOne(id: string) {
-    const expense = this.expenseRepository.findOneBy({ expenseId: id });
+  async findByEvent(eventId: string) {
+    const expenses = await this.expenseRepository.find({
+      where: { event: { eventId } },
+      relations: ['paidBy', 'event', 'splits'],
+    });
 
-    if (!expense) throw new Error(`No se encuentra el evento: ${id}`);
+    if (!expenses.length) {
+      throw new NotFoundException('No se encontraron gastos para este evento');
+    }
+
+    return expenses;
+  }
+
+  async findOne(id: string) {
+    const expense = await this.expenseRepository.findOne({ where: { expenseId: id } });
+    if (!expense) throw new NotFoundException(`Gasto con id ${id} no encontrado`);
     return expense;
   }
 
@@ -31,18 +66,15 @@ export class ExpensesService {
     const expenseToUpdate = await this.expenseRepository.preload({
       expenseId: id,
       ...updateExpenseDto,
-    })
+    });
+    if (!expenseToUpdate) throw new NotFoundException(`Gasto con id ${id} no encontrado`);
 
-    if (!expenseToUpdate) throw new Error(`No se encuentra el evento: ${id}`); 
-    this.expenseRepository.save(expenseToUpdate);
-    return expenseToUpdate;
+    return this.expenseRepository.save(expenseToUpdate);
   }
 
-  remove(id: string) {
-    this.expenseRepository.delete({ expenseId: id });
-
-    return {
-      message: `El evento con id ${id} fue eliminado`
-    }
+  async remove(id: string) {
+    const result = await this.expenseRepository.delete({ expenseId: id });
+    if (result.affected === 0) throw new NotFoundException(`Gasto con id ${id} no encontrado`);
+    return { message: `El gasto con id ${id} fue eliminado` };
   }
 }
