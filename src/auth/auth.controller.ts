@@ -1,30 +1,47 @@
-import { Controller, Post, Body, Res } from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { TOKEN_NAME } from './constants/jwt.constants';
 import type { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private usersService: UsersService) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Res({passthrough: true}) response:Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const token = await this.authService.login(loginDto);
-    console.log(token)
-    response.cookie(TOKEN_NAME, token,{
-      httpOnly: false,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    })
-    return
-  }
 
+    // guardar la cookie httpOnly
+    response.cookie(TOKEN_NAME, token.access_token ?? token, {
+      httpOnly: true,
+      secure:  true, //process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+    
+    console.log("Seteando cookie:", TOKEN_NAME, token.access_token);
+    return { message: 'Login exitoso' };
+  }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  async getProfile(@Req() req) {
+    // console.log(req.user);
+    // return req.user;
+    const userId = req.user.id;
+    return this.usersService.findOne(userId);
   }
 }

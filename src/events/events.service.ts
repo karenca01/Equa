@@ -23,6 +23,7 @@ export class EventsService {
     private userRepository: Repository<User>,
   ) {}
   create(createEventDto: CreateEventDto) {
+    
     return this.eventRepository.save(createEventDto);
   }
 

@@ -20,14 +20,15 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Usuario no encontrado');
     }
+    console.log(JSON.stringify(user));
 
     const passwordValid = await bcrypt.compare(userPassword, user.userPassword);
     if (!passwordValid) {
-      throw new UnauthorizedException('Contrasña incorrecta');
+      throw new UnauthorizedException('Contraseña incorrecta');
     }
 
     // Generar JWT
-    const payload = { sub: user.userId, email: user.userEmail };
+    const payload = { sub: user.userId, email: user.userEmail, username: user.username, userFullName: user.userFullName, userCreatedEvents: user.createdEvents, userJoinedEvents: user.joinedEvents };
     return {
       access_token: this.jwtService.sign(payload),
     };

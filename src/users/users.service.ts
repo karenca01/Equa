@@ -20,14 +20,21 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOne(id: string) {
-    this.userRepository.findOneBy({ userId: id });
+  async findOne(id: string) {
+    console.log("buscando el usuario con id", id);
+    const user = await this.userRepository.findOneBy({ userId: id });
+    console.log("usuario encontrado", user);
+
+    if (!user) throw new NotFoundException(`No se encuentra el usuario: ${id}`);
+
+    const { userId, userPassword, ...rest } = user;
+    return {userId, ...rest};
   }
 
-  findByUsername(username: string) {
-    const user = this.userRepository.findOneBy({ username: username });
+  async findByUsername(username: string) {
+    const user = await this.userRepository.findOneBy({ username: username });
 
-    if (!user) throw new NotFoundException(`No se encuentra el usuario: ${name}`);
+    if (!user) throw new NotFoundException(`No se encuentra el usuario: ${username}`);
     return user;
   }
 
