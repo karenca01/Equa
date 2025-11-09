@@ -21,8 +21,9 @@ export class AuthController {
     // guardar la cookie httpOnly
     response.cookie(TOKEN_NAME, token.access_token ?? token, {
       httpOnly: true,
-      secure:  true, //process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production' ? true : false,
+      //secure: process.env.NODE_ENV === 'production', 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', //'none',
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
@@ -43,5 +44,14 @@ export class AuthController {
     // return req.user;
     const userId = req.user.id;
     return this.usersService.findOne(userId);
+  }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie(TOKEN_NAME, {
+      path: '/',
+      sameSite: 'lax',
+    });
+    return { message: 'Logout exitoso' };
   }
 }

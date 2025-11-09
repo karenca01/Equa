@@ -22,8 +22,7 @@ export class EventsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
-  create(createEventDto: CreateEventDto) {
-    
+  create(createEventDto: CreateEventDto) {  
     return this.eventRepository.save(createEventDto);
   }
 

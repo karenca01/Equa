@@ -9,19 +9,28 @@ import { TOKEN_NAME } from '../constants/jwt.constants';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly usersService: UsersService) {
-  super({
-    jwtFromRequest: ExtractJwt.fromExtractors([
-      (req: Request) => req?.cookies?.[TOKEN_NAME], //lee cookie
-    ]),
-    ignoreExpiration: false,
-    secretOrKey: JWT_KEY,
-  });
-
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => req?.cookies?.[TOKEN_NAME], //lee cookie
+      ]),
+      ignoreExpiration: false,
+      secretOrKey: JWT_KEY,
+    });
   }
 
   async validate(payload: any) {
     console.log('Payload recibido en JwtStrategy:', payload);
     const user = await this.usersService.findOne(payload.sub);
-    return user;
+
+    if (!user) {
+      return null; // causa un 401 automáticamente si no existe
+    }
+
+    return {
+      id: user.userId,
+      email: user.userEmail,
+      username: user.username,
+      userFullName: user.userFullName,
+    };
   }
 }
