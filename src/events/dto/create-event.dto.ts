@@ -14,7 +14,7 @@ export class CreateEventDto {
     @IsOptional()
     eventType: string;
 
-    @IsObject()
+    @IsString()
     @IsOptional()
-    createdBy?: User;
+    createdBy?: string;
 }

@@ -29,7 +29,7 @@ export class AuthController {
     });
     
     console.log("Seteando cookie:", TOKEN_NAME, token.access_token);
-    return { message: 'Login exitoso' };
+    return { message: 'Login exitoso'};
   }
 
   @Post('register')

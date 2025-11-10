@@ -20,7 +20,7 @@ export class Event {
     @JoinColumn({
         name: 'createdBy',
     })
-    createdBy: User;
+    createdBy: string;
 
     @ManyToMany(() => User, user => user.joinedEvents, {
         eager: true,
