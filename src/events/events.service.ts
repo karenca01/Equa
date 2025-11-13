@@ -22,12 +22,17 @@ export class EventsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
+
+  //TODO: crear dto con usuario
+
   create(createEventDto: CreateEventDto) {  
     return this.eventRepository.save(createEventDto);
   }
 
   findAll() {
-    return this.eventRepository.find();
+    return this.eventRepository.find({
+      relations:["createdBy", "participants", "expenses"]
+    });
   }
 
   findOne(id: string) {

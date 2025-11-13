@@ -17,7 +17,7 @@ export class EventsController {
 
     return this.eventsService.create({
       ...createEventDto,
-      createdBy: user.id,
+      createdBy: user.id
     });
   }
 
