@@ -8,7 +8,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Expense } from 'src/expenses/entities/expense.entity';
 import { Expensesplit } from 'src/expensesplits/entities/expensesplit.entity';
 import { User } from 'src/users/entities/user.entity';
-import { p, th } from 'framer-motion/client';
+import { In } from 'typeorm';
 
 @Injectable()
 export class EventsService {
@@ -25,8 +25,21 @@ export class EventsService {
 
   //TODO: crear dto con usuario
 
-  create(createEventDto: CreateEventDto) {  
-    return this.eventRepository.save(createEventDto);
+  async create(createEventDto: CreateEventDto) {
+    const user = await this.userRepository.findOne({
+      where: { userId: createEventDto.createdBy }
+    });
+
+    if (!user) {
+      throw new NotFoundException("Usuario no encontrado");
+    }
+
+    const event = this.eventRepository.create({
+      ...createEventDto,
+      createdBy: user.userId,
+    });
+
+    return await this.eventRepository.save(event);
   }
 
   findAll() {
@@ -69,7 +82,8 @@ export class EventsService {
     if(!event) throw new NotFoundException(`No se encuentra el evento: ${eventId}`);
 
     const users = await this.userRepository.find({ 
-      where: participantIds.map(id=>({userId: id})),
+      // where: participantIds.map(id=>({userId: id})),
+      where: { userId: In(participantIds) }
     });
 
     if(users.length === 0) throw new NotFoundException(`No se encuentran usuarios`);

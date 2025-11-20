@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Like } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -22,8 +23,11 @@ export class UsersService {
 
   async findOne(id: string) {
     console.log("buscando el usuario con id", id);
-    const user = await this.userRepository.findOneBy({ userId: id });
-    console.log("usuario encontrado", user);
+    const user = await this.userRepository.findOne({ 
+      where: { userId: id },
+      relations: ['createdEvents', 'joinedEvents']
+     });
+    // console.log("usuario encontrado", user);
 
     if (!user) throw new NotFoundException(`No se encuentra el usuario: ${id}`);
 
@@ -36,6 +40,18 @@ export class UsersService {
 
     if (!user) throw new NotFoundException(`No se encuentra el usuario: ${username}`);
     return user;
+  }
+
+  async searchUsers(query: string) {
+    if (!query || query.trim() === "") return [];
+    
+    return this.userRepository.find({
+      where: [
+        { username: Like(`%${query}%`) },
+        { userEmail: Like(`%${query}%`) }
+      ],
+      take: 10,
+    });
   }
 
   findByEmail(email: string) {
