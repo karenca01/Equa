@@ -49,7 +49,10 @@ export class EventsService {
   }
 
   findOne(id: string) {
-    const event = this.eventRepository.findOneBy({ eventId: id });
+    const event = this.eventRepository.findOne({
+      where: { eventId: id },
+      relations: ["createdBy", "participants", "expenses"],
+    });
 
     if (!event) throw new NotFoundException(`No se encuentra el evento: ${id}`);
     return event;
@@ -123,6 +126,19 @@ export class EventsService {
       message: 'Participantes eliminados exitosamente',
       participants: event.participants,
     };
+  }
+
+  async getEventParticipants(eventId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { eventId },
+      relations: ["participants"],
+    });
+
+    if (!event) {
+      throw new NotFoundException("Evento no encontrado");
+    }
+
+    return event.participants;
   }
 
   async getEventSummary(eventId: string) {

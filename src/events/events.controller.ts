@@ -47,6 +47,11 @@ export class EventsController {
     return this.eventsService.deleteParticipants(eventId, body.participants);
   }
 
+  @Get(":id/participants")
+  async getEventParticipants(@Param("id") id: string) {
+    return this.eventsService.getEventParticipants(id);
+  }
+
   @Get(':id/summary')
   async getEventSummary(@Param('id') id: string) {
     return this.eventsService.getEventSummary(id);
