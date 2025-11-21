@@ -49,11 +49,7 @@ export class ExpensesService {
       relations: ['paidBy', 'event', 'splits'],
     });
 
-    if (!expenses.length) {
-      throw new NotFoundException('No se encontraron gastos para este evento');
-    }
-
-    return expenses;
+    return expenses; // TypeORM ya devuelve []
   }
 
   async findOne(id: string) {

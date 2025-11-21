@@ -24,7 +24,8 @@ export class ExpensesController {
 
   @Get('/event/:eventId')
   async findByEvent(@Param('eventId') eventId: string) {
-    return this.expensesService.findByEvent(eventId);
+    const expenses = await this.expensesService.findByEvent(eventId);
+    return expenses ?? [];
   }
 
   @Get(':id')
