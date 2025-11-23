@@ -13,7 +13,7 @@ export class EventsController {
   @Post()
   create(@Body() createEventDto: CreateEventDto, @Req() req) {
     const user = req.user;
-    console.log('Usuario autenticado:', user);
+    // console.log('Usuario autenticado:', user);
 
     return this.eventsService.create({
       ...createEventDto,

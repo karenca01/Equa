@@ -6,6 +6,7 @@ import { TOKEN_NAME } from './constants/jwt.constants';
 import type { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from '../users/users.service';
+import { Auth } from './decorators/auth.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -28,7 +29,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     
-    console.log("Seteando cookie:", TOKEN_NAME, token.access_token);
+    // console.log("Seteando cookie:", TOKEN_NAME, token.access_token);
     return { message: 'Login exitoso'};
   }
 
@@ -37,7 +38,8 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
+  @Auth()
   @Get('me')
   async getProfile(@Req() req) {
     // console.log(req.user);

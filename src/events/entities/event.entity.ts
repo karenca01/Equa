@@ -16,11 +16,19 @@ export class Event {
     @Column({ default: 'Private' }) // private o public
     eventType: string;
 
+    // @ManyToOne(() => User, user => user.createdEvents)
+    // @JoinColumn({
+    //     name: 'createdBy',
+    // })
+    // createdBy: string;
+
     @ManyToOne(() => User, user => user.createdEvents)
-    @JoinColumn({
-        name: 'createdBy',
-    })
-    createdBy: string;
+    @JoinColumn({ name: 'createdBy' })
+    createdBy: User;
+
+    @Column()
+    createdById: string;
+
 
     @ManyToMany(() => User, user => user.joinedEvents, {
         eager: true,

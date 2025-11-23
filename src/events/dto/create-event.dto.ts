@@ -1,6 +1,4 @@
-import { IsObject, IsOptional, IsString, MaxLength, IsIn } from "class-validator";
-import { User } from "../../users/entities/user.entity";
-import { Event } from "../../events/entities/event.entity";
+import { IsOptional, IsString, MaxLength, IsIn } from "class-validator";
 
 export class CreateEventDto {
     @IsString()

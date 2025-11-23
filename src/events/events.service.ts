@@ -25,22 +25,40 @@ export class EventsService {
 
   //TODO: crear dto con usuario
 
+  // async create(createEventDto: CreateEventDto) {
+  //   const user = await this.userRepository.findOne({
+  //     where: { userId: createEventDto.createdBy }
+  //   });
+
+  //   if (!user) {
+  //     throw new NotFoundException("Usuario no encontrado");
+  //   }
+
+  //   const event = this.eventRepository.create({
+  //     ...createEventDto,
+  //     createdBy: user.userId,
+  //   });
+
+  //   return await this.eventRepository.save(event);
+  // }
+
   async create(createEventDto: CreateEventDto) {
     const user = await this.userRepository.findOne({
-      where: { userId: createEventDto.createdBy }
+      where: { userId: createEventDto.createdBy },
     });
 
-    if (!user) {
-      throw new NotFoundException("Usuario no encontrado");
-    }
+    if (!user) throw new NotFoundException("Usuario no encontrado");
 
     const event = this.eventRepository.create({
       ...createEventDto,
-      createdBy: user.userId,
+      createdBy: user,
+      createdById: user.userId,
+      participants: [user],
     });
 
-    return await this.eventRepository.save(event);
+    return this.eventRepository.save(event);
   }
+
 
   findAll() {
     return this.eventRepository.find({
@@ -58,16 +76,34 @@ export class EventsService {
     return event;
   }
 
-  async update(id: string, updateEventDto: UpdateEventDto) {
-    const eventToUpdate = await this.eventRepository.preload({
-      eventId: id,
-      ...updateEventDto,
-    })
+  // async update(id: string, updateEventDto: UpdateEventDto) {
+  //   const eventToUpdate = await this.eventRepository.preload({
+  //     eventId: id,
+  //     ...updateEventDto,
+  //   })
 
-    if (!eventToUpdate) throw new NotFoundException(`No se encuentra el evento: ${id}`); 
-    this.eventRepository.save(eventToUpdate);
-    return eventToUpdate;
-  }
+  //   if (!eventToUpdate) throw new NotFoundException(`No se encuentra el evento: ${id}`); 
+  //   this.eventRepository.save(eventToUpdate);
+  //   return eventToUpdate;
+  // }
+
+  async update(id: string, updateEventDto: UpdateEventDto) {
+    const { createdBy, ...rest } = updateEventDto;
+    const payload: any = {
+      eventId: id,
+      ...rest
+    };
+
+    if (createdBy) {
+      payload.createdBy = { userId: createdBy };
+    }
+
+    const eventToUpdate = await this.eventRepository.preload(payload);
+
+    if (!eventToUpdate) { throw new NotFoundException(`Evento con id ${id} no encontrado`); }
+    return await this.eventRepository.save(eventToUpdate);
+}
+
 
   remove(id: string) {
     this.eventRepository.delete({ eventId: id });
@@ -131,14 +167,20 @@ export class EventsService {
   async getEventParticipants(eventId: string) {
     const event = await this.eventRepository.findOne({
       where: { eventId },
-      relations: ["participants"],
+      relations: ["participants", "createdBy"],
     });
 
     if (!event) {
       throw new NotFoundException("Evento no encontrado");
     }
 
-    return event.participants;
+    // return event.participants;
+    return event.participants.map((p) => ({
+      userId: p.userId,
+      userFullName: p.userFullName,
+      userEmail: p.userEmail,
+      isCreator: p.userId === event.createdById,
+    }))
   }
 
   async getEventSummary(eventId: string) {

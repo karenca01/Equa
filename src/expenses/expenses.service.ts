@@ -23,7 +23,10 @@ export class ExpensesService {
   async create(createExpenseDto: CreateExpenseDto, userId: string) {
     const { expenseDescription, expenseAmount, eventId } = createExpenseDto;
 
-    const event = await this.eventRepository.findOne({ where: { eventId } });
+    const event = await this.eventRepository.findOne({
+      where: { eventId },
+      relations: ['paidBy', 'event', 'splits'],
+    });
     if (!event) throw new NotFoundException('Evento no encontrado');
 
     const user = await this.userRepository.findOne({ where: { userId } });

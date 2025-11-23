@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateExpensesplitDto } from './dto/create-expensesplit.dto';
 import { UpdateExpensesplitDto } from './dto/update-expensesplit.dto';
-import { In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expensesplit } from './entities/expensesplit.entity';
 import { Repository } from 'typeorm';
+import { Expense } from '../expenses/entities/expense.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ExpensesplitsService {
@@ -13,37 +14,65 @@ export class ExpensesplitsService {
     private expensesplitRepository: Repository<Expensesplit>,
   ) {}
 
-  create(createExpensesplitDto: CreateExpensesplitDto) {
-    return this.expensesplitRepository.save(createExpensesplitDto);
+  async create(dto: CreateExpensesplitDto) {
+    const expense = await this.expensesplitRepository.manager.findOne(Expense, {
+      where: { expenseId: dto.expenseId },
+    });
+
+    const user = await this.expensesplitRepository.manager.findOne(User, {
+      where: { userId: dto.userId },
+    });
+
+    if (!expense) throw new Error('Expense no encontrado');
+    if (!user) throw new Error('User no encontrado');
+
+    const split = this.expensesplitRepository.create({
+      expense,
+      user,
+      expenseSplitAmount: dto.expenseSplitAmount,
+      expenseSplitPercentage: dto.expenseSplitPercentage,
+    });
+
+    return this.expensesplitRepository.save(split);
   }
 
   findAll() {
-    return this.expensesplitRepository.find();
+    return this.expensesplitRepository.find({
+      relations: ['expense', 'user'],
+    });
   }
 
-  findOne(id: string) {
-    const expenseSplit = this.expensesplitRepository.findOneBy({ expenseSplitId: id });
+  async findOne(id: string) {
+    const expenseSplit = await this.expensesplitRepository.findOne({
+      where: { expenseSplitId: id },
+      relations: ['expense', 'user'],
+    });
 
-    if (!expenseSplit) throw new Error(`No se encuentra el evento: ${id}`);
+    if (!expenseSplit) throw new Error(`No existe el split con ID ${id}`);
+
     return expenseSplit;
   }
 
-  async update(id: string, updateExpensesplitDto: UpdateExpensesplitDto) {
+  async update(id: string, dto: UpdateExpensesplitDto) {
     const expenseSplitToUpdate = await this.expensesplitRepository.preload({
       expenseSplitId: id,
-      ...updateExpensesplitDto,
-    })
+      ...dto,
+    });
 
-    if (!expenseSplitToUpdate) throw new Error(`No se encuentra la relación: ${id}`); 
-    this.expensesplitRepository.save(expenseSplitToUpdate);
-    return expenseSplitToUpdate;
+    if (!expenseSplitToUpdate)
+      throw new Error(`No existe split con ID ${id}`);
+
+    return this.expensesplitRepository.save(expenseSplitToUpdate);
   }
 
-  remove(id: string) {
-    this.expensesplitRepository.delete({ expenseSplitId: id });
+  async remove(id: string) {
+    const result = await this.expensesplitRepository.delete(id);
+
+    if (result.affected === 0)
+      throw new Error(`No existe el split con ID ${id}`);
 
     return {
-      message: `La relación con id ${id} fue eliminado`
-    }
+      message: `Split ${id} eliminado correctamente.`,
+    };
   }
 }

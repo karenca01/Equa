@@ -21,19 +21,38 @@ export class UsersService {
     return this.userRepository.find();
   }
 
+  // async findOne(id: string) {
+  //   console.log("buscando el usuario con id", id);
+  //   const user = await this.userRepository.findOne({ 
+  //     where: { userId: id },
+  //     relations: ['createdEvents', 'joinedEvents']
+  //    });
+  //   // console.log("usuario encontrado", user);
+
+  //   if (!user) throw new NotFoundException(`No se encuentra el usuario: ${id}`);
+
+  //   const { userId, userPassword, ...rest } = user;
+  //   return {userId, ...rest};
+  // }
+
   async findOne(id: string) {
-    console.log("buscando el usuario con id", id);
-    const user = await this.userRepository.findOne({ 
-      where: { userId: id },
-      relations: ['createdEvents', 'joinedEvents']
-     });
-    // console.log("usuario encontrado", user);
+  const user = await this.userRepository.findOne({
+    where: { userId: id },
+    relations: ['createdEvents', 'joinedEvents']
+  });
 
-    if (!user) throw new NotFoundException(`No se encuentra el usuario: ${id}`);
+  if (!user) throw new NotFoundException(`No se encuentra el usuario: ${id}`);
 
-    const { userId, userPassword, ...rest } = user;
-    return {userId, ...rest};
-  }
+  const { userId, userPassword, createdEvents, joinedEvents, ...rest } = user;
+
+  return {
+    userId,
+    ...rest,
+    createdEvents: createdEvents?.map(ev => ev.eventId) || [],
+    joinedEvents: joinedEvents?.map(ev => ev.eventId) || []
+  };
+}
+
 
   async findByUsername(username: string) {
     const user = await this.userRepository.findOneBy({ username: username });

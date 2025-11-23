@@ -15,12 +15,4 @@ export class CreateUserDto {
     @IsString()
     @MinLength(8)
     userPassword: string;
-
-    @IsObject()
-    @IsOptional()
-    createdEvents: Event[];
-
-    @IsObject()
-    @IsOptional()
-    joinedEvents: Event[];
 }
