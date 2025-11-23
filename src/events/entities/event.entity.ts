@@ -30,9 +30,7 @@ export class Event {
     createdById: string;
 
 
-    @ManyToMany(() => User, user => user.joinedEvents, {
-        eager: true,
-    })
+    @ManyToMany(() => User, user => user.joinedEvents)
     @JoinTable()
     participants: User[];
 

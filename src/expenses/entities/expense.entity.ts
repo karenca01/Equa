@@ -14,11 +14,11 @@ export class Expense {
   @Column('decimal', { precision: 10, scale: 2 })
   expenseAmount: number;
 
-  @ManyToOne(() => User, { eager: true })
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'paidBy' })
   paidBy: User; // quién pagó
 
-  @ManyToOne(() => Event, (event) => event.expenses, { onDelete: 'CASCADE', eager: true })
+  @ManyToOne(() => Event, (event) => event.expenses, { onDelete: 'CASCADE'})
   @JoinColumn({ name: 'eventId' })
   event: Event;
 

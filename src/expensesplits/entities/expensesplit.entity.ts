@@ -22,8 +22,8 @@ export class Expensesplit {
   user: User; // quién debe pagar
 
   @Column('decimal', { nullable: true, precision: 10, scale: 2 })
-  expenseSplitAmount: number; // si se divide por monto fijo
+  expenseSplitAmount?: number;
 
-  @Column('decimal', { nullable: true })
-  expenseSplitPercentage: number; // si se divide por porcentaje
+  @Column('decimal', { nullable: true, precision: 5, scale: 2 })
+  expenseSplitPercentage?: number;
 }

@@ -1,17 +1,27 @@
-import { IsUUID, IsNumber, IsOptional } from "class-validator";
+import { IsUUID, IsObject, IsNumber, IsOptional, IsString } from "class-validator";
+import { User } from "../../users/entities/user.entity";
+import { Expense } from "../../expenses/entities/expense.entity";
 
 export class CreateExpensesplitDto {
-    @IsUUID()
-    expenseId: string;
+  @IsUUID()
+  @IsOptional()
+  expenseSplitId?: string;
 
-    @IsUUID()
-    userId: string;
+  @IsObject()
+  @IsOptional()
+  expense?: Expense;
 
-    @IsNumber()
-    @IsOptional()
-    expenseSplitAmount?: number;
+  // @IsObject()
+  // user: User;
 
-    @IsNumber()
-    @IsOptional()
-    expenseSplitPercentage?: number;
+  @IsString()
+  userId: string;
+
+  @IsNumber()
+  @IsOptional() 
+  expenseSplitAmount?: number;
+
+  @IsNumber()
+  @IsOptional() 
+  expenseSplitPercentage?: number;
 }

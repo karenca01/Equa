@@ -1,78 +1,41 @@
-import { Injectable } from '@nestjs/common';
-import { CreateExpensesplitDto } from './dto/create-expensesplit.dto';
-import { UpdateExpensesplitDto } from './dto/update-expensesplit.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Expensesplit } from './entities/expensesplit.entity';
 import { Repository } from 'typeorm';
-import { Expense } from '../expenses/entities/expense.entity';
-import { User } from '../users/entities/user.entity';
+import { Expensesplit } from './entities/expensesplit.entity';
+import { UpdateExpensesplitDto } from './dto/update-expensesplit.dto';
 
 @Injectable()
 export class ExpensesplitsService {
   constructor(
     @InjectRepository(Expensesplit)
-    private expensesplitRepository: Repository<Expensesplit>,
+    private readonly expensesplitRepository: Repository<Expensesplit>,
   ) {}
 
-  async create(dto: CreateExpensesplitDto) {
-    const expense = await this.expensesplitRepository.manager.findOne(Expense, {
-      where: { expenseId: dto.expenseId },
-    });
-
-    const user = await this.expensesplitRepository.manager.findOne(User, {
-      where: { userId: dto.userId },
-    });
-
-    if (!expense) throw new Error('Expense no encontrado');
-    if (!user) throw new Error('User no encontrado');
-
-    const split = this.expensesplitRepository.create({
-      expense,
-      user,
-      expenseSplitAmount: dto.expenseSplitAmount,
-      expenseSplitPercentage: dto.expenseSplitPercentage,
-    });
-
-    return this.expensesplitRepository.save(split);
-  }
-
   findAll() {
-    return this.expensesplitRepository.find({
-      relations: ['expense', 'user'],
-    });
+    return this.expensesplitRepository.find({ relations: ['expense', 'user'] });
   }
 
   async findOne(id: string) {
-    const expenseSplit = await this.expensesplitRepository.findOne({
+    const split = await this.expensesplitRepository.findOne({
       where: { expenseSplitId: id },
       relations: ['expense', 'user'],
     });
-
-    if (!expenseSplit) throw new Error(`No existe el split con ID ${id}`);
-
-    return expenseSplit;
+    if (!split) throw new NotFoundException(`Split con id ${id} no encontrado`);
+    return split;
   }
 
-  async update(id: string, dto: UpdateExpensesplitDto) {
-    const expenseSplitToUpdate = await this.expensesplitRepository.preload({
+  async update(id: string, updateDto: UpdateExpensesplitDto) {
+    const splitToUpdate = await this.expensesplitRepository.preload({
       expenseSplitId: id,
-      ...dto,
+      ...updateDto,
     });
-
-    if (!expenseSplitToUpdate)
-      throw new Error(`No existe split con ID ${id}`);
-
-    return this.expensesplitRepository.save(expenseSplitToUpdate);
+    if (!splitToUpdate) throw new NotFoundException(`Split con id ${id} no encontrado`);
+    return this.expensesplitRepository.save(splitToUpdate);
   }
 
   async remove(id: string) {
-    const result = await this.expensesplitRepository.delete(id);
-
-    if (result.affected === 0)
-      throw new Error(`No existe el split con ID ${id}`);
-
-    return {
-      message: `Split ${id} eliminado correctamente.`,
-    };
+    const result = await this.expensesplitRepository.delete({ expenseSplitId: id });
+    if (result.affected === 0) throw new NotFoundException(`Split con id ${id} no encontrado`);
+    return { message: `Split con id ${id} eliminado correctamente` };
   }
 }

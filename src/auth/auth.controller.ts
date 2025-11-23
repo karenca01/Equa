@@ -18,6 +18,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const token = await this.authService.login(loginDto);
+    console.log("token", token);
 
     // guardar la cookie httpOnly
     response.cookie(TOKEN_NAME, token.access_token ?? token, {

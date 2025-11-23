@@ -43,7 +43,8 @@ export class UsersService {
 
   if (!user) throw new NotFoundException(`No se encuentra el usuario: ${id}`);
 
-  const { userId, userPassword, createdEvents, joinedEvents, ...rest } = user;
+  const { userId, createdEvents, joinedEvents, ...rest } = user;
+  // const { userId, userPassword, createdEvents, joinedEvents, ...rest } = user;
 
   return {
     userId,

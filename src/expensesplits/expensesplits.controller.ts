@@ -1,16 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Delete, Body } from '@nestjs/common';
 import { ExpensesplitsService } from './expensesplits.service';
-import { CreateExpensesplitDto } from './dto/create-expensesplit.dto';
 import { UpdateExpensesplitDto } from './dto/update-expensesplit.dto';
 
 @Controller('expensesplits')
 export class ExpensesplitsController {
   constructor(private readonly expensesplitsService: ExpensesplitsService) {}
-
-  @Post()
-  create(@Body() createExpensesplitDto: CreateExpensesplitDto) {
-    return this.expensesplitsService.create(createExpensesplitDto);
-  }
 
   @Get()
   findAll() {
@@ -23,8 +17,8 @@ export class ExpensesplitsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateExpensesplitDto: UpdateExpensesplitDto) {
-    return this.expensesplitsService.update(id, updateExpensesplitDto);
+  update(@Param('id') id: string, @Body() updateDto: UpdateExpensesplitDto) {
+    return this.expensesplitsService.update(id, updateDto);
   }
 
   @Delete(':id')
