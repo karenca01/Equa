@@ -23,23 +23,21 @@ export class EventsService {
     private userRepository: Repository<User>,
   ) {}
 
-  //TODO: crear dto con usuario
-
   // async create(createEventDto: CreateEventDto) {
   //   const user = await this.userRepository.findOne({
-  //     where: { userId: createEventDto.createdBy }
+  //     where: { userId: createEventDto.createdBy },
   //   });
 
-  //   if (!user) {
-  //     throw new NotFoundException("Usuario no encontrado");
-  //   }
+  //   if (!user) throw new NotFoundException("Usuario no encontrado");
 
   //   const event = this.eventRepository.create({
   //     ...createEventDto,
-  //     createdBy: user.userId,
+  //     createdBy: user,
+  //     createdById: user.userId,
+  //     participants: [user],
   //   });
 
-  //   return await this.eventRepository.save(event);
+  //   return this.eventRepository.save(event);
   // }
 
   async create(createEventDto: CreateEventDto) {
@@ -49,8 +47,10 @@ export class EventsService {
 
     if (!user) throw new NotFoundException("Usuario no encontrado");
 
+    const { createdBy, ...rest } = createEventDto;
+
     const event = this.eventRepository.create({
-      ...createEventDto,
+      ...rest,
       createdBy: user,
       createdById: user.userId,
       participants: [user],
@@ -58,7 +58,6 @@ export class EventsService {
 
     return this.eventRepository.save(event);
   }
-
 
   findAll() {
     return this.eventRepository.find({
@@ -75,17 +74,6 @@ export class EventsService {
     if (!event) throw new NotFoundException(`No se encuentra el evento: ${id}`);
     return event;
   }
-
-  // async update(id: string, updateEventDto: UpdateEventDto) {
-  //   const eventToUpdate = await this.eventRepository.preload({
-  //     eventId: id,
-  //     ...updateEventDto,
-  //   })
-
-  //   if (!eventToUpdate) throw new NotFoundException(`No se encuentra el evento: ${id}`); 
-  //   this.eventRepository.save(eventToUpdate);
-  //   return eventToUpdate;
-  // }
 
   async update(id: string, updateEventDto: UpdateEventDto) {
     const { createdBy, ...rest } = updateEventDto;
