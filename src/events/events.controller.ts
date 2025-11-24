@@ -4,6 +4,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Req, UseGuards } from '@nestjs/common';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('events')
 export class EventsController {
@@ -17,7 +18,7 @@ export class EventsController {
 
     return this.eventsService.create({
       ...createEventDto,
-      createdBy: user.id
+      createdBy: user.sub
     });
   }
 
@@ -62,8 +63,9 @@ export class EventsController {
     return this.eventsService.update(id, updateEventDto);
   }
 
+  @Auth()
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(id);
+  remove(@Param('id') id: string , @Req() req) {
+    return this.eventsService.remove(id, req.user.id || req.user.sub);
   }
 }

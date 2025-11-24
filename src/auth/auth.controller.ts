@@ -39,13 +39,12 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  // @UseGuards(AuthGuard('jwt'))
-  @Auth()
+  @UseGuards(AuthGuard('jwt'))
   @Get('me')
   async getProfile(@Req() req) {
     // console.log(req.user);
     // return req.user;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user.sub;
     return this.usersService.findOne(userId);
   }
 

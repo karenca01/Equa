@@ -30,11 +30,13 @@ export class ExpensesService {
 
     const event = await this.eventRepository.findOne({ 
       where: { eventId }, 
-      relations: ['participants'] 
+      relations: ['participants', 'expenses', 'expenses.paidBy','expenses.splits']
     });
     if (!event) throw new NotFoundException('Evento no encontrado');
 
     const payer = await this.userRepository.findOne({ where: { userId } });
+    // console.log("payer", payer);
+
     if (!payer) throw new NotFoundException('Usuario no encontrado');
 
     const expense = this.expenseRepository.create({
@@ -43,6 +45,9 @@ export class ExpensesService {
       event,
       paidBy: payer,
     });
+
+    // console.log("expense", expense);
+
     const savedExpense = await this.expenseRepository.save(expense);
 
     if (splits && splits.length > 0) {
@@ -86,7 +91,9 @@ export class ExpensesService {
   }
 
   findAll() {
-    return this.expenseRepository.find();
+    return this.expenseRepository.find({
+      relations: ['paidBy', 'event', 'splits']
+    });
   }
 
   async findByEvent(eventId: string) {
@@ -99,7 +106,10 @@ export class ExpensesService {
   }
 
   async findOne(id: string) {
-    const expense = await this.expenseRepository.findOne({ where: { expenseId: id } });
+    const expense = await this.expenseRepository.findOne({ 
+      where: { expenseId: id },
+      relations: ['paidBy', 'event', 'splits', 'splits.user'],
+    });
     if (!expense) throw new NotFoundException(`Gasto con id ${id} no encontrado`);
     return expense;
   }

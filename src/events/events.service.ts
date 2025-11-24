@@ -9,6 +9,7 @@ import { Expense } from 'src/expenses/entities/expense.entity';
 import { Expensesplit } from 'src/expensesplits/entities/expensesplit.entity';
 import { User } from 'src/users/entities/user.entity';
 import { In } from 'typeorm';
+import { ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class EventsService {
@@ -93,13 +94,30 @@ export class EventsService {
 }
 
 
-  remove(id: string) {
-    this.eventRepository.delete({ eventId: id });
+  // remove(id: string) {
+  //   this.eventRepository.delete({ eventId: id });
 
-    return {
-      message: `El evento con id ${id} fue eliminado`
+  //   return {
+  //     message: `El evento con id ${id} fue eliminado`
+  //   }
+  // }
+
+  async remove(eventId: string, userId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { eventId },
+      relations: ['createdBy'],
+    });
+
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    if (event.createdBy.userId !== userId) {
+      throw new ForbiddenException('No tienes permiso para eliminar este evento');
     }
+
+    await this.eventRepository.remove(event);
+    return { message: 'Evento eliminado correctamente' };
   }
+
 
   async addParticipants(eventId: string, participantIds: string[]) {
     const event = await this.eventRepository.findOne({
