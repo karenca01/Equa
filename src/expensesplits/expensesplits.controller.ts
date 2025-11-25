@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Delete, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Delete, Body, UseGuards } from '@nestjs/common';
 import { ExpensesplitsService } from './expensesplits.service';
 import { UpdateExpensesplitDto } from './dto/update-expensesplit.dto';
 

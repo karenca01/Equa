@@ -9,7 +9,7 @@ import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Event, Expense, Expensesplit, User])
+    TypeOrmModule.forFeature([Event, Expense, Expensesplit, User]),
   ],
   controllers: [EventsController],
   providers: [EventsService],

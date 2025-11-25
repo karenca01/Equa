@@ -51,9 +51,12 @@ export class AuthController {
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie(TOKEN_NAME, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' ? true : false,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
-      sameSite: 'lax',
     });
+
     return { message: 'Logout exitoso' };
   }
 }
