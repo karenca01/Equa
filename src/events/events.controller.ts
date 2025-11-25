@@ -10,7 +10,8 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
+  @Auth()
   @Post()
   create(@Body() createEventDto: CreateEventDto, @Req() req) {
     const user = req.user;

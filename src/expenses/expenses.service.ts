@@ -116,13 +116,64 @@ export class ExpensesService {
   }
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto) {
-    const expenseToUpdate = await this.expenseRepository.preload({
-      expenseId: id,
-      ...updateExpenseDto,
-    });
-    if (!expenseToUpdate) throw new NotFoundException(`Gasto con id ${id} no encontrado`);
+    const { expenseDescription, expenseAmount, splits } = updateExpenseDto;
 
-    return this.expenseRepository.save(expenseToUpdate);
+    const expense = await this.expenseRepository.findOne({
+      where: { expenseId: id },
+      relations: ['splits', 'event', 'paidBy'],
+    });
+
+    if (!expense) throw new NotFoundException(`Gasto con id ${id} no encontrado`);
+
+    if (expenseDescription !== undefined) expense.expenseDescription = expenseDescription;
+    if (expenseAmount !== undefined) expense.expenseAmount = expenseAmount;
+
+    const updatedExpense = await this.expenseRepository.save(expense);
+
+    if (!splits) return updatedExpense;
+
+    await this.expensesplitRepository.delete({ expense: { expenseId: id } });
+
+    let totalSplit = 0;
+
+    for (const splitDto of splits) {
+      const user = await this.userRepository.findOne({
+        where: { userId: splitDto.userId },
+      });
+
+      if (!user) throw new NotFoundException(`Usuario ${splitDto.userId} no encontrado`);
+
+      if (splitDto.expenseSplitAmount != null && splitDto.expenseSplitPercentage != null) {
+        throw new BadRequestException('Solo se puede usar monto fijo o porcentaje, no ambos');
+      }
+
+      let finalAmount = splitDto.expenseSplitAmount;
+
+      if (splitDto.expenseSplitPercentage != null) {
+        finalAmount = (splitDto.expenseSplitPercentage / 100) * Number(expenseAmount);
+      }
+
+      if (finalAmount == null) {
+        throw new BadRequestException('Debe proporcionar monto fijo o porcentaje para cada split');
+      }
+
+      totalSplit += Number(finalAmount);
+
+      const split = this.expensesplitRepository.create({
+        expense: updatedExpense,
+        user,
+        expenseSplitAmount: finalAmount,
+        expenseSplitPercentage: splitDto.expenseSplitPercentage ?? undefined,
+      });
+
+      await this.expensesplitRepository.save(split);
+    }
+
+    if (Number(totalSplit.toFixed(2)) !== Number(expenseAmount)) {
+      throw new BadRequestException('La suma de los splits no coincide con el total del gasto');
+    }
+
+    return updatedExpense;
   }
 
   async remove(id: string) {
