@@ -26,69 +26,89 @@ export class ExpensesService {
   ) {}
 
   async create(createExpenseDto: CreateExpenseDto, userId: string) {
-    // console.log("ID del usuario", userId);
     const { expenseDescription, expenseAmount, eventId, splits } = createExpenseDto;
 
-    const event = await this.eventRepository.findOne({ 
-      where: { eventId }, 
-      relations: ['participants', 'expenses', 'expenses.paidBy','expenses.splits']
-    });
-    if (!event) throw new NotFoundException('Evento no encontrado');
+    return await this.expenseRepository.manager.transaction(async (manager) => {
+      const event = await manager.findOne(Event, {
+        where: { eventId },
+        relations: ['participants'],
+      });
+      if (!event) throw new NotFoundException('Evento no encontrado');
 
-    const payer = await this.userRepository.findOne({ where: { userId } });
-    // console.log("payer", payer);
+      const payer = await manager.findOne(User, { where: { userId } });
+      if (!payer) throw new NotFoundException('Usuario no encontrado');
 
-    if (!payer) throw new NotFoundException('Usuario no encontrado');
+      const expense = manager.create(Expense, {
+        expenseDescription,
+        expenseAmount,
+        event,
+        paidBy: payer,
+      });
 
-    const expense = this.expenseRepository.create({
-      expenseDescription,
-      expenseAmount,
-      event,
-      paidBy: payer,
-    });
-
-    // console.log("expense", expense);
-
-    const savedExpense = await this.expenseRepository.save(expense);
-
-    if (splits && splits.length > 0) {
       let totalSplit = 0;
+      const splitEntities: Expensesplit[] = [];
 
-      for (const splitDto of splits) {
-        const user = await this.userRepository.findOne({ where: { userId: splitDto.userId } });
-        if (!user) throw new NotFoundException(`Usuario ${splitDto.userId} no encontrado`);
+      if (splits && splits.length > 0) {
+        for (const splitDto of splits) {
+          const user = await manager.findOne(User, {
+            where: { userId: splitDto.userId },
+          });
 
-        if (splitDto.expenseSplitAmount != null && splitDto.expenseSplitPercentage != null) {
-          throw new BadRequestException('Solo se puede usar monto fijo o porcentaje, no ambos');
+          if (!user)
+            throw new NotFoundException(`Usuario ${splitDto.userId} no encontrado`);
+
+          if (
+            splitDto.expenseSplitAmount != null &&
+            splitDto.expenseSplitPercentage != null
+          ) {
+            throw new BadRequestException(
+              'Solo se puede usar monto fijo o porcentaje, no ambos'
+            );
+          }
+
+          let finalAmount =
+            splitDto.expenseSplitAmount != null
+              ? splitDto.expenseSplitAmount
+              : splitDto.expenseSplitPercentage != null
+              ? (splitDto.expenseSplitPercentage / 100) *
+                Number(expenseAmount)
+              : null;
+
+          if (finalAmount == null) {
+            throw new BadRequestException(
+              'Debe proporcionar monto fijo o porcentaje para cada split'
+            );
+          }
+
+          totalSplit += Number(finalAmount);
+
+          const split = manager.create(Expensesplit, {
+            expense: expense, 
+            user: user,
+            expenseSplitAmount: finalAmount,
+            expenseSplitPercentage:
+              splitDto.expenseSplitPercentage ?? undefined,
+          });
+
+          splitEntities.push(split);
         }
 
-        let finalAmount = splitDto.expenseSplitAmount;
-        if (splitDto.expenseSplitPercentage != null) {
-          finalAmount = (splitDto.expenseSplitPercentage / 100) * Number(expenseAmount);
+        if (Number(totalSplit.toFixed(2)) !== Number(expenseAmount)) {
+          throw new BadRequestException(
+            'La suma de los splits no coincide con el total del gasto'
+          );
         }
-
-        if (finalAmount == null) {
-          throw new BadRequestException('Debe proporcionar monto fijo o porcentaje para cada split');
-        }
-
-        totalSplit += Number(finalAmount);
-
-        const split = this.expensesplitRepository.create({
-          expense: savedExpense,
-          user,
-          expenseSplitAmount: finalAmount,
-          expenseSplitPercentage: splitDto.expenseSplitPercentage ?? undefined,
-        });
-
-        await this.expensesplitRepository.save(split);
       }
 
-      if (Number(totalSplit.toFixed(2)) !== Number(expenseAmount)) {
-        throw new BadRequestException('La suma de los splits no coincide con el total del gasto');
-      }
-    }
+      const savedExpense = await manager.save(expense);
 
-    return savedExpense;
+      for (const split of splitEntities) {
+        split.expense = savedExpense; 
+        await manager.save(split);
+      }
+
+      return savedExpense;
+    });
   }
 
   findAll() {
