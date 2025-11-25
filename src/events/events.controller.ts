@@ -33,6 +33,11 @@ export class EventsController {
     return this.eventsService.findOne(id);
   }
 
+  @Get(':id/balances')
+  async getBalances(@Param('id') id: string) {
+    return this.eventsService.getEventBalances(id);
+  }
+
   @Post('add-participants/:id')
   async addParticipants(
     @Param('id') eventId: string,
@@ -41,10 +46,10 @@ export class EventsController {
     return this.eventsService.addParticipants(eventId, participantIds);
   }
 
-  @Delete(':eventId/participants') // Ruta más limpia y semántica
+  @Delete(':eventId/participants')
   async deleteParticipants(
-    @Param('eventId') eventId: string, // Nombre del parámetro más claro
-    @Body() body: { participants: string[] }, // Usamos el DTO o el cuerpo completo
+    @Param('eventId') eventId: string, 
+    @Body() body: { participants: string[] }, 
   ) {
     return this.eventsService.deleteParticipants(eventId, body.participants);
   }
@@ -52,11 +57,6 @@ export class EventsController {
   @Get(":id/participants")
   async getEventParticipants(@Param("id") id: string) {
     return this.eventsService.getEventParticipants(id);
-  }
-
-  @Get(':id/summary')
-  async getEventSummary(@Param('id') id: string) {
-    return this.eventsService.getEventSummary(id);
   }
 
   @Patch(':id')

@@ -189,45 +189,63 @@ export class EventsService {
     }))
   }
 
-  async getEventSummary(eventId: string) {
-    const expenseses = await this.expenseRepository.find({
-      where: { event: {eventId: eventId} },
-      relations: ['paidBy', 'splits', 'splits.user'],
+  async getEventBalances(eventId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { eventId },
+      relations: [
+        'participants',
+        'expenses',
+        'expenses.paidBy',
+        'expenses.splits',
+        'expenses.splits.user'
+      ]
     });
 
-    const balances: Record<number, { user:User; paid: number; owes: number }> = {};
-    for(const expense of expenseses) {
-      const playerId = expense.paidBy.userId;
-      if(!balances[playerId]) {
-        balances[playerId] = {
-          user: expense.paidBy,
-          paid: 0,
-          owes: 0,
-        }
-      }
-      balances[playerId].paid += expense.expenseAmount;
+    if (!event) throw new NotFoundException('Evento no encontrado');
 
-      for(const split of expense.splits) {
-        const userId = split.user.userId;
-        if(!balances[userId]) {
-          balances[userId] = {
-            user: split.user,
-            paid: 0,
-            owes: 0,
-          }
-        }
-        balances[userId].owes += split.expenseSplitAmount;
+    const participants = event.participants;
+
+    // Inicializar matriz de deudas
+    const balances: Record<string, Record<string, number>> = {};
+
+    for (const p of participants) {
+      balances[p.userId] = {};
+      for (const q of participants) {
+        balances[p.userId][q.userId] = 0;
       }
     }
 
-    const result = Object.values(balances).map(b => ({
-      userId: b.user.userId,
-      userName: b.user.userFullName,
-      paid: b.paid,
-      owes: b.owes,
-      balance: b.paid - b.owes,
-    }));
+    // Procesar cada gasto
+    for (const expense of event.expenses) {
+      const payer = expense.paidBy.userId;
 
-    return result;
+      for (const split of expense.splits) {
+        const debtor = split.user.userId;
+        const amount = Number(split.expenseSplitAmount);
+
+        // El deudor le debe al pagador
+        balances[debtor][payer] += amount;
+      }
+    }
+
+    // Compensación: netear deudas
+    for (const u1 of participants) {
+      for (const u2 of participants) {
+        const a = balances[u1.userId][u2.userId];
+        const b = balances[u2.userId][u1.userId];
+
+        if (a > b) {
+          balances[u1.userId][u2.userId] = Number((a - b).toFixed(2));
+          balances[u2.userId][u1.userId] = 0;
+        } else {
+          balances[u2.userId][u1.userId] = Number((b - a).toFixed(2));
+          balances[u1.userId][u2.userId] = 0;
+        }
+      }
+    }
+    return {
+      participants,
+      balances,
+    };
   }
 }
