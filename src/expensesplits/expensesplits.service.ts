@@ -18,7 +18,7 @@ export class ExpensesplitsService {
   findByExpense(expenseId: string) {
     return this.expensesplitRepository.find({
       where: { expense: { expenseId } },
-      relations: ['expense', 'user'],
+      relations: ['expense','expense.paidBy', 'user'],
     });
   }
 
