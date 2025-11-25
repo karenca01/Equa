@@ -16,6 +16,13 @@ export class ExpensesplitsController {
     return this.expensesplitsService.findOne(id);
   }
 
+  @Get('/expense/:expenseId')
+  async findByExpense(@Param('expenseId') expenseId: string) {
+    // console.log(expenseId);
+    const splits = await this.expensesplitsService.findByExpense(expenseId);
+    return splits ?? [];
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDto: UpdateExpensesplitDto) {
     return this.expensesplitsService.update(id, updateDto);

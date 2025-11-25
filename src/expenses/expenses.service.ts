@@ -26,6 +26,7 @@ export class ExpensesService {
   ) {}
 
   async create(createExpenseDto: CreateExpenseDto, userId: string) {
+    // console.log("ID del usuario", userId);
     const { expenseDescription, expenseAmount, eventId, splits } = createExpenseDto;
 
     const event = await this.eventRepository.findOne({ 

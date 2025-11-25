@@ -13,7 +13,8 @@ export class ExpensesController {
   @Auth()
   @Post()
   create(@Body() createExpenseDto: CreateExpenseDto, @Req() req) {
-    console.log('Usuario en sesión:', req.user);
+    // console.log('Usuario en sesión:', req.user);
+    // const userId = req.user.id; // el userId del token
     const userId = req.user.sub; // el userId del token
     return this.expensesService.create(createExpenseDto, userId);
   }
