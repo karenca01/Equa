@@ -46,6 +46,7 @@ export class UsersService {
     const { userId, createdEvents, joinedEvents, ...rest } = user;
     // const { userId, userPassword, createdEvents, joinedEvents, ...rest } = user;
 
+    //lo que retorna del usuario
     return {
       userId,
       ...rest,
@@ -62,6 +63,7 @@ export class UsersService {
     return user;
   }
 
+  //para poder filtrar los usuario en busqueda
   async searchUsers(query: string) {
     if (!query || query.trim() === "") return [];
     

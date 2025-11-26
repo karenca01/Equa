@@ -16,6 +16,7 @@ export class ExpensesplitsController {
     return this.expensesplitsService.findOne(id);
   }
 
+  //encontrar por gasto
   @Get('/expense/:expenseId')
   async findByExpense(@Param('expenseId') expenseId: string) {
     // console.log(expenseId);

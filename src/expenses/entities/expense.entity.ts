@@ -20,8 +20,8 @@ export class Expense {
 
   @ManyToOne(() => Event, (event) => event.expenses, { onDelete: 'CASCADE'})
   @JoinColumn({ name: 'eventId' })
-  event: Event;
+  event: Event; //relación con el evento
 
   @OneToMany(() => Expensesplit, (split) => split.expense)
-  splits: Expensesplit[];
+  splits: Expensesplit[]; //relación con los splits
 }

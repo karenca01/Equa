@@ -24,7 +24,7 @@ export class Event {
 
     @ManyToOne(() => User, user => user.createdEvents)
     @JoinColumn({ name: 'createdBy' })
-    createdBy: User;
+    createdBy: User; // el usuario que creó el evento
 
     @Column()
     createdById: string;
@@ -32,8 +32,8 @@ export class Event {
 
     @ManyToMany(() => User, user => user.joinedEvents)
     @JoinTable()
-    participants: User[];
+    participants: User[]; //los usuarios que se agregaron al evento
 
     @OneToMany(() => Expense, expense => expense.event)
-    expenses: Expense[];
+    expenses: Expense[]; //relación con los gastos
 }

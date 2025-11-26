@@ -11,6 +11,7 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   // @UseGuards(AuthGuard('jwt'))
+  //para crear un evento
   @Auth()
   @Post()
   create(@Body() createEventDto: CreateEventDto, @Req() req) {
@@ -23,21 +24,25 @@ export class EventsController {
     });
   }
 
+  //para obtener todos los eventos
   @Get()
   findAll() {
     return this.eventsService.findAll();
   }
 
+  //para obtener un evento
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.eventsService.findOne(id);
   }
 
+  //para obtener el balance de un evento
   @Get(':id/balances')
   async getBalances(@Param('id') id: string) {
     return this.eventsService.getEventBalances(id);
   }
 
+  //para agregar participantes a un evento
   @Post('add-participants/:id')
   async addParticipants(
     @Param('id') eventId: string,
@@ -46,6 +51,7 @@ export class EventsController {
     return this.eventsService.addParticipants(eventId, participantIds);
   }
 
+  //para eliminar participantes de un evento
   @Delete(':eventId/participants')
   async deleteParticipants(
     @Param('eventId') eventId: string, 

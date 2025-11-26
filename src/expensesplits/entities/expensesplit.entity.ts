@@ -13,7 +13,7 @@ export class Expensesplit {
   @JoinColumn({
     name: 'expense',
   })
-  expense: Expense;
+  expense: Expense; //relación con el gasto, elimina en cascada
 
   @ManyToOne(() => User)
   @JoinColumn({
@@ -21,6 +21,7 @@ export class Expensesplit {
   })
   user: User; // quién debe pagar
 
+  //opcioneales porque puede ser uno u otro
   @Column('decimal', { nullable: true, precision: 10, scale: 2 })
   expenseSplitAmount?: number;
 

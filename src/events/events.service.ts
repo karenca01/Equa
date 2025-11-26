@@ -24,23 +24,6 @@ export class EventsService {
     private userRepository: Repository<User>,
   ) {}
 
-  // async create(createEventDto: CreateEventDto) {
-  //   const user = await this.userRepository.findOne({
-  //     where: { userId: createEventDto.createdBy },
-  //   });
-
-  //   if (!user) throw new NotFoundException("Usuario no encontrado");
-
-  //   const event = this.eventRepository.create({
-  //     ...createEventDto,
-  //     createdBy: user,
-  //     createdById: user.userId,
-  //     participants: [user],
-  //   });
-
-  //   return this.eventRepository.save(event);
-  // }
-
   async create(createEventDto: CreateEventDto) {
     const user = await this.userRepository.findOne({
       where: { userId: createEventDto.createdBy },
@@ -50,6 +33,8 @@ export class EventsService {
 
     const { createdBy, ...rest } = createEventDto;
 
+    //se asiganan campos asignando datos
+    //en relación con el usuario que creó el evento
     const event = this.eventRepository.create({
       ...rest,
       createdBy: user,
@@ -110,6 +95,7 @@ export class EventsService {
 
     if (!event) throw new NotFoundException('Evento no encontrado');
 
+    //no puede editarlo si no es el creador
     if (event.createdBy.userId !== userId) {
       throw new ForbiddenException('No tienes permiso para eliminar este evento');
     }
@@ -185,7 +171,7 @@ export class EventsService {
       userId: p.userId,
       userFullName: p.userFullName,
       userEmail: p.userEmail,
-      isCreator: p.userId === event.createdById,
+      isCreator: p.userId === event.createdById, //para saber si es el creador
     }))
   }
 

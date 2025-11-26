@@ -7,10 +7,10 @@ export class User {
     userId: string;
 
     @Column()
-    username: string;
+    username: string; //nombre de usuario, identificador en el sistema
 
     @Column()
-    userFullName: string;
+    userFullName: string; //nombre "real" completo
 
     @Column()
     userEmail: string;
@@ -19,8 +19,8 @@ export class User {
     userPassword: string;
 
     @OneToMany(() => Event, event => event.createdBy)
-    createdEvents: Event[];
+    createdEvents: Event[]; //eventos que ha creado
 
     @ManyToMany(() => Event, event => event.participants)
-    joinedEvents: Event[];
+    joinedEvents: Event[]; //eventos a los que se ha unido
 }
